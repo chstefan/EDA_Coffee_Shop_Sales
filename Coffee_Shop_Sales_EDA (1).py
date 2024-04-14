@@ -27,16 +27,14 @@ print(sales_data.isnull().sum())
 
 import pandas as pd
 
-# Ensure that 'transaction_date' and 'transaction_time' are strings before concatenation
+# Convert to datetime
 sales_data['transaction_date'] = sales_data['transaction_date'].astype(str)
 sales_data['transaction_time'] = sales_data['transaction_time'].astype(str)
 
-# Combine 'transaction_date' and 'transaction_time' and convert to datetime
 sales_data['transaction_datetime'] = pd.to_datetime(
     sales_data['transaction_date'] + ' ' + sales_data['transaction_time']
 )
 
-# Drop the original 'transaction_date' and 'transaction_time' columns
 sales_data.drop(columns=['transaction_date', 'transaction_time'], inplace=True)
 
 
@@ -53,7 +51,6 @@ sales_data = sales_data.drop_duplicates()
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-# Standardization
 scaler = StandardScaler()
 sales_data[['transaction_qty', 'unit_price', 'Total_Bill']] = scaler.fit_transform(sales_data[['transaction_qty', 'unit_price', 'Total_Bill']])
 
@@ -63,11 +60,8 @@ print("Standard Deviation after standardization:\n", sales_data.std(axis=0))
 
 # In[6]:
 
-
-# Assuming 'data' is the DataFrame that needs to be transformed into 'sales_data'
+#get dummies for data
 sales_data_with_dummies = pd.get_dummies(sales_data, columns=['store_location', 'product_category', 'product_type', 'Size', 'Month Name', 'Day Name'], drop_first=True)
-
-# Display the transformed DataFrame
 sales_data_with_dummies.head()
 
 
@@ -107,7 +101,7 @@ plt.show()
 # In[10]:
 
 
-# Example for visualizing 'product_category' distribution - categorical Analysis
+# 'product_category' distribution - categorical Analysis
 plt.figure(figsize=(10, 6))
 sales_data_with_dummies['product_category_Tea'] = sales_data_with_dummies.filter(regex='product_category_').sum(axis=1)  # Adjust based on actual encoding
 sns.countplot(x='product_category_Tea', data=sales_data_with_dummies)
@@ -145,8 +139,6 @@ for col in numerical_cols:
 
 # In[13]:
 
-
-# Select a subset of numerical columns if the dataset is large to avoid long computation times
 sns.pairplot(sales_data_with_dummies[numerical_cols])
 plt.show()
 
@@ -154,7 +146,7 @@ plt.show()
 # In[14]:
 
 
-# Example: Relationship between 'unit_price' and 'Total_Bill'
+#Relationship between 'unit_price' and 'Total_Bill'
 plt.scatter(sales_data_with_dummies['unit_price'], sales_data_with_dummies['Total_Bill'])
 plt.xlabel('Unit Price')
 plt.ylabel('Total Bill')
@@ -166,7 +158,6 @@ plt.show()
 
 
 #Sales Forcasting Model 
-
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
@@ -175,12 +166,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_squared_error
 import numpy as np
 
-# Feature selection: Utilize existing time-related and categorical features
+# Feature selection and Encoding
 features = ['store_id', 'product_id', 'Hour', 'Month', 'Day of Week', 'Size', 'product_category']
 X = sales_data[features]
 y = sales_data['Total_Bill']
 
-# Encoding categorical features
+
 categorical_features = ['store_id', 'product_id', 'Size', 'product_category']
 numeric_features = ['Hour', 'Month', 'Day of Week']
 
@@ -195,20 +186,15 @@ preprocessor = ColumnTransformer(
 model = Pipeline(steps=[('preprocessor', preprocessor),
                         ('regressor', LinearRegression())])
 
-# Split the data
+# model initialisation and rmse
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Train the model
 model.fit(X_train, y_train)
 
-# Evaluate the model
 y_pred = model.predict(X_test)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
 print('RMSE:', rmse)
-
-
-# In[ ]:
 
 
 
